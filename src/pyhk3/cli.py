@@ -118,7 +118,6 @@ def print_result(r):
             r = json.dumps(r, indent=2, default=str)
         except Exception:
             pass
-    print('result')
     print(r)
 
 
