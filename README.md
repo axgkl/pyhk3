@@ -8,7 +8,7 @@
 
 [Hetzner-k3s][hk3s] is nicely engineered general k3s installation tool on Hetzner, with a large degree of declarative possibilities for customization. As terraform, it is a single static binary and idempotent, with a single source of truth. In contrast to terraform it is straightforward to use, with far less abstractions but a lot of built in best practices, incl CNI and autoscaling, plus faster.
 
-This repo here provides a set of **bash functions**, incl. possibly useful support tools to organize them, in order to further automate _around_ the pure k3s installation, which hetzner-k3s provides.
+This repo here provides a set of **python functions**, incl. possibly useful support tools to organize them, in order to further automate _around_ the pure k3s installation, which hetzner-k3s provides.
 
 
 ## Features
@@ -36,8 +36,8 @@ That bastion server is the only one with a public IP, and is equipped with a l4 
 We provide the functions necessary to
 
 - create the private network
-- bastion node itself, with ssh key
-- tools (hetzner-k3s, kubectl, helm) and [optional load balancer service](./docs/l4lb.md) on it
+- bastion node itself, incl. ssh key and make it know to hetzner.
+- tools (hetzner-k3s, kubectl, helm) and [load balancer service](./docs/l4lb.md) on it
 - cloud init config for hetzner-k3s, so that the priv ip nodes can reach the internet
 
 Then hetzner-k3s can be run from there, to create the cluster.
@@ -100,6 +100,49 @@ See [here](./docs/customization.md)
 [here](./docs/customization.md)
 
 ---
+
+#### Local kubectl/helm support
+
+You want to copy the kubeconfig file, which the installer script created on the bastion node to your local machine, so that you can manage the cluster from there.
+
+I change the server line within the copied local kubeconfig to this:
+
+```yaml
+server: https://127.0.0.1:16443
+```
+
+and configure ssh like this:
+
+```config
+# ---- cluster citest
+Host citest-proxy
+    HostName 37.27.... # pub ip of the bastion node
+    User root
+    Port 22
+    LocalForward 16443 10.1.0.3:6443 # first master
+Host citest-m1
+    HostName 10.1.0.3
+    User root
+    Port 22
+    ProxyCommand ssh -W %h:%p citest-proxy
+Host citest-m2
+    HostName 10.1.0.4
+    User root
+    Port 22
+    ProxyCommand ssh -W %h:%p citest-proxy
+Host citest-m3
+    HostName 10.1.0.5
+    User root
+    Port 22
+    ProxyCommand ssh -W %h:%p citest-proxy
+# ---- cluster citest
+```
+
+#### Load Balancer on Bastion Node
+
+You can install a layer 4 load balancer on bastion, turning it into a full proxy into your cluster, eradicating the need for a hetzner load balancer.
+
+[This repo](https://github.com/axgkl/hk3sf) explains how to do that.
 
 ## Refs
 
