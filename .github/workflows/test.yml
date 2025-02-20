@@ -10,7 +10,6 @@ jobs:
       url_binenv: "https://raw.githubusercontent.com/axgkl/binaries/refs/heads/master/binenv-install.sh"
       URL_BINENV_DISTRIS: "https://raw.githubusercontent.com/axgkl/binaries/refs/heads/master/binenv-install.sh"
       BINENV_TOOLS: "uv gotop"
-
     #if: "contains(github.event.head_commit.message, 'binenv-tests')"
 
     steps:
