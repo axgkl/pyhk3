@@ -3,7 +3,15 @@
 
 NAME="company"
 
-DNS_API_TOKEN=""
+# 🔑 Direct support for pass:
+# DNS_API_TOKEN="pass:DO/pat"
+#
+# For others use py:...
+DNS_API_TOKEN="py:keyval"
+GITOPS_TOKEN="py:keyval"
+HCLOUD_TOKEN="py:keyval"
+HCLOUD_TOKEN_WRITE="py:keyval"
+
 DNS_PROVIDER="digitalocean"
 DOMAIN="py:keyval"
 EMAIL="py:keyval"
@@ -20,8 +28,3 @@ GITOPS_OWNER="company"
 GITOPS_PATH="clusters/staging"
 GITOPS_REPO="k8s"
 GITOPS_TOKEN=""
-
-DNS_API_TOKEN="pass:DO/pat"
-GITOPS_TOKEN="pass:AX/gitlabflux"
-HCLOUD_TOKEN="pass:HCloudLoisRO"
-HCLOUD_TOKEN_WRITE="pass:HCloudLois"
