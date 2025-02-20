@@ -50,4 +50,9 @@ download-kubectl:
   just p do download_kubectl
 
 test:
-   uv run pytest ./tests/test_setup.py
+  uv run pytest ./tests/test_setup.py
+
+publish:
+  just test
+  uv build
+  uv publish --token `pass show pypitoken`
