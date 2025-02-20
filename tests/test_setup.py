@@ -1,4 +1,10 @@
-from pyhk3 import create
+from pyhk3 import create, hk3s
+
+
+def test_render():
+    c = hk3s.render_config()
+    print(c)
+    assert 'master' in c
 
 
 def test_import():
