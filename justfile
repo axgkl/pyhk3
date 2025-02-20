@@ -50,7 +50,7 @@ download-kubectl:
   just p do download_kubectl
 
 test:
-  render-config
+  just render-config
   uv run pytest ./tests/test_setup.py
 
 publish:
