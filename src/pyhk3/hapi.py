@@ -34,7 +34,6 @@ class hapi:
         v = cache.get(path)
         if v != nil:
             return v
-            # return log.debug('Cache hit', path=path) or v
         r = requests.get(f'{base}/{path}', headers=headers())
         r = r.json()
         if 'error' in r:
