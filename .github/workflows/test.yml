@@ -29,8 +29,8 @@ jobs:
       - name: Install tools (e.g. uv)
         run: wget "$url_binenv" -O - | bash
 
-      - name: Set up Python
-        run: uv python install
+      # - name: Set up Python
+      #   run: uv python install
 
       - name: Set up venv
         run: uv sync
