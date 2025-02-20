@@ -26,13 +26,13 @@ jobs:
       - name: Set up Just
         uses: extractions/setup-just@v2
 
-      - name: Install tools
+      - name: Install tools (e.g. uv)
         run: wget "$url_binenv" -O - | bash
 
       - name: Set up Python
         run: uv python install
 
-      - name: Set up pyyaml
+      - name: Set up venv
         run: uv sync
 
       - name: Run tests
