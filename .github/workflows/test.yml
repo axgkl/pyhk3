@@ -1,0 +1,39 @@
+name: Test Workflow
+on:
+  push:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      url_binenv: "https://raw.githubusercontent.com/axgkl/binaries/refs/heads/master/binenv-install.sh"
+
+    #if: "contains(github.event.head_commit.message, 'binenv-tests')"
+
+    steps:
+      - name: Add binenv to path
+        shell: bash
+        run: echo "/home/runner/.binenv" >> $GITHUB_PATH
+
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Just
+        uses: extractions/setup-just@v2
+
+      - name: Install tools
+        run: |
+          wget "$url_binenv" -O - | bash
+          binenv install uv 0.6.1
+
+      # - name: Set up Python
+      #   run: uv python install
+
+      - name: Set up pyyaml
+        run: uv sync
+
+      - name: Run tests
+        run: just test
