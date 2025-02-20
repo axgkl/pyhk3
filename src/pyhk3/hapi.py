@@ -36,7 +36,11 @@ class hapi:
             return v
             # return log.debug('Cache hit', path=path) or v
         r = requests.get(f'{base}/{path}', headers=headers())
-        r = cache.cache[path] = r.json()[path]
+        r = r.json()
+        if 'error' in r:
+            log.error(f'error [{path}]', **r)
+            return []
+        r = cache.cache[path] = r[path]
         return r
 
     def delete(path, id):
