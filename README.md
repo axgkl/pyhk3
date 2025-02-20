@@ -31,3 +31,7 @@ flowchart LR
 
 That bastion server is the only one with a public IP, and is equipped with a l4 loadbalancer, forwarding the traffic into the cluster, like a hetzner loadbalancer would do.
 
+
+
+[hk3s]: https://github.com/vitobotta/hetzner-k3s
+[hcloud]: https://docs.hetzner.cloud/
