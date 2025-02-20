@@ -1,0 +1,27 @@
+# vim: ft=sh
+# shellcheck disable=all
+
+NAME="company"
+
+DNS_API_TOKEN=""
+DNS_PROVIDER="digitalocean"
+DOMAIN="py:keyval"
+EMAIL="py:keyval"
+FN_SSH_KEY="$HOME/.ssh/hetzner-cluster-lois"
+
+HK_HOST_NETWORK=8
+HK_VER="2.2.3"
+HK_LOCATION="fsn1"
+
+# flux
+GITOPS_BRANCH="main"
+GITOPS_HOST="py:keyval"
+GITOPS_OWNER="company"
+GITOPS_PATH="clusters/staging"
+GITOPS_REPO="k8s"
+GITOPS_TOKEN=""
+
+DNS_API_TOKEN="pass:DO/pat"
+GITOPS_TOKEN="pass:AX/gitlabflux"
+HCLOUD_TOKEN="pass:HCloudLoisRO"
+HCLOUD_TOKEN_WRITE="pass:HCloudLois"

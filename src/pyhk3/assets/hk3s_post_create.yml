@@ -1,0 +1,26 @@
+post_create_commands:
+  - echo "Started" > /.status
+  - timedatectl set-timezone Europe/Berlin
+  - echo '%(key_proxy)s' >> /root/.ssh/authorized_keys
+  - echo '%(key_local)s' >> /root/.ssh/authorized_keys
+  - echo "root:$(head -c 50 /dev/urandom | base64)" | chpasswd
+  - mkdir -p /etc/network/interfaces.d
+  - iface="$(ip -o -4 addr list | grep " 10.%(HK_HOST_NETWORK)s." | cut -d " " -f 2)"
+  - |
+    cat > /etc/network/interfaces.d/$iface <<EOF
+    auto $iface
+    iface $iface inet dhcp
+      post-up ip route add default via 10.%(HK_HOST_NETWORK)s.0.1
+      post-up ip route add 169.254.169.254 via 172.31.1.1
+    EOF
+  - rm -f /etc/resolv.conf
+  - |
+    cat > /etc/resolv.conf <<EOF
+    nameserver 185.12.64.1
+    nameserver 185.12.64.2
+    edns edns0 trust-ad
+    search .
+    EOF
+  - ip route add 169.254.0.0/16 via 172.31.1.1
+  - ip route add default via 10.%(HK_HOST_NETWORK)s.0.1
+  - echo "Done" > /.status

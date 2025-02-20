@@ -1,0 +1,71 @@
+---
+cluster_name: "%(NAME)s"
+kubeconfig_path: "/root/.kube/config"
+k3s_version: "%(HK_VER_K3S)s"
+networking:
+  ssh:
+    port: 22
+    use_agent: false # set to true if your key has a passphrase
+    public_key_path: "~/.ssh/id_ed25519.pub"
+    private_key_path: "~/.ssh/id_ed25519"
+  allowed_networks:
+    ssh:
+      - 0.0.0.0/0
+    api:
+      - 0.0.0.0/0
+  public_network:
+    ipv4: false
+    ipv6: true
+  private_network:
+    enabled: true
+    subnet: 10.%(HK_HOST_NETWORK)s.0.0/16
+    existing_network_name: ten-%(HK_HOST_NETWORK)s
+  cni:
+    enabled: true
+    encryption: false
+    mode: T(HK_CNI)s
+  cluster_cidr: "%(HK_CIDR_CLUSTER)s"
+  service_cidr: "%(HK_CIDR_SERVICE)s"
+  cluster_dns: "%(HK_DNS_CLUSTER)s"
+datastore:
+  mode: etcd # etcd (default) or external
+  external_datastore_endpoint: postgres://....
+schedule_workloads_on_masters: T(HK_MASTERS_ARE_WORKERS)s
+create_load_balancer_for_the_kubernetes_api: false
+protect_against_deletion: false
+
+masters_pool:
+  instance_type: "%(HK_MASTERS_TYPE)s"
+  instance_count: T(HK_MASTERS_COUNT)s
+  location: "%(HK_LOCATION)s"
+  image: "%(HK_MASTERS_IMG)s"
+
+worker_node_pools:
+  - name: "%(NAME)s-small-static"
+    instance_type: "%(HK_WORKERS_TYPE)s"
+    instance_count: T(HK_WORKERS_COUNT)s
+    location: "%(HK_LOCATION)s"
+    image: "%(HK_WORKERS_IMG)s"
+    # labels:
+    #   - key: purpose
+    #     value: blah
+    # taints:
+    #   - key: something
+    #     value: value1:NoSchedule
+
+  - name: "%(NAME)s-medium-autoscaled"
+    instance_type: "%(HK_AUTOSCL_TYPE)s"
+    location: "%(HK_LOCATION)s"
+    image: "%(HK_AUTOSCL_IMG)s"
+    autoscaling:
+      enabled: true
+      min_instances: 0
+      max_instances: T(HK_AUTOSCL_COUNT)s
+
+embedded_registry_mirror:
+  enabled: T(HK_REGISTRY_MIRROR)s
+
+additional_packages:
+  - ifupdown
+
+api_server_hostname: "first_master"

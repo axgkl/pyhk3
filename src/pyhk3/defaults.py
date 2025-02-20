@@ -1,0 +1,47 @@
+binenv_custom_base = 'https://github.com/axgkl/binaries/raw/master'
+dflt_img = 'ubuntu-24.04'
+dflt_type = 'cx22'
+
+
+class envdefaults:
+    BINENV_TOOLS_PROXY = 'helm 3.16.3 kubectl 1.31.3 hetzner-k3s 2.2.3 btop 1.4.0'
+    DNS_API_TOKEN = 'your-token-to-add-a-wildcard-dns-entry-at-provider'
+    DNS_PROVIDER = 'digitalocean'  # see dns.py for others
+    DNS_TTL = 60
+    DOMAIN = 'k8s.mycompany.net'
+    EMAIL = 'me@mycompany.com'
+    FN_SSH_KEY = '$HOME/.ssh/hetzner-cluster'  # created if not exists, also on hcloud
+    GITOPS_BRANCH = 'main'
+    GITOPS_HOST = 'gitlab.mycompany.com'
+    GITOPS_OWNER = 'company'
+    GITOPS_PATH = 'clusters/staging'
+    GITOPS_REPO = 'k8s'
+    GITOPS_TOKEN = ''
+    HCLOUD_TOKEN = ''
+    HCLOUD_TOKEN_WRITE = ''
+    HK_AUTOSCL_COUNT = 9
+    HK_AUTOSCL_IMG = dflt_img
+    HK_AUTOSCL_TYPE = 'cpx31'  # expensive
+    HK_CIDR_CLUSTER = '10.50.0.0/16'
+    HK_CIDR_SERVICE = '10.60.0.0/16'
+    HK_CNI = 'cilium'
+    HK_DNS_CLUSTER = '10.60.0.10'
+    HK_HOST_NETWORK = 1
+    HK_LOCATION = 'hel1'
+    HK_MASTERS_ARE_WORKERS = True
+    HK_MASTERS_COUNT = 3
+    HK_MASTERS_IMG = dflt_img
+    HK_MASTERS_TYPE = dflt_type
+    HK_PROXY_IMG = 'ubuntu-24.04'
+    HK_PROXY_TYPE = 'cx22'
+    HK_REGISTRY_MIRROR = True
+    HK_CFG_TMPL = ''  # empty: default template
+    HK_CFG_POST = ''
+    HK_VER = '2.2.3'
+    HK_VER_K3S = 'v1.30.2+k3s2'
+    HK_WORKERS_COUNT = 0
+    HK_WORKERS_IMG = dflt_img
+    HK_WORKERS_TYPE = dflt_type
+    NAME = 'k3s'
+    URL_BINENV_DISTRIS = f'{binenv_custom_base}/distributions.patch.yaml'
+    URL_CADDY = f'{binenv_custom_base}/caddy-amd64'
