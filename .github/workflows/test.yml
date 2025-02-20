@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       url_binenv: "https://raw.githubusercontent.com/axgkl/binaries/refs/heads/master/binenv-install.sh"
+      URL_BINENV_DISTRIS: "https://raw.githubusercontent.com/axgkl/binaries/refs/heads/master/binenv-install.sh"
+      URL_BINENV_TOOls: "uv"
 
     #if: "contains(github.event.head_commit.message, 'binenv-tests')"
 
@@ -25,9 +27,7 @@ jobs:
         uses: extractions/setup-just@v2
 
       - name: Install tools
-        run: |
-          wget "$url_binenv" -O - | bash
-          binenv install uv 0.6.1
+        run: wget "$url_binenv" -O - | bash
 
       # - name: Set up Python
       #   run: uv python install
