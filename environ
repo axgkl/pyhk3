@@ -15,7 +15,7 @@ HCLOUD_TOKEN_WRITE="py:keyval"
 DNS_PROVIDER="digitalocean"
 DOMAIN="py:keyval"
 EMAIL="py:keyval"
-FN_SSH_KEY="$HOME/.ssh/hetzner-cluster-lois"
+FN_SSH_KEY="py:keyval"
 
 HK_HOST_NETWORK=8
 HK_VER="2.2.3"

@@ -292,7 +292,12 @@ class hk3s:
         tmpl = E('HK_CFG_TMPL', '') or f'{dtmpl}/hk3s.yml'
         pmpl = E('HK_CFG_POST', '') or f'{dtmpl}/hk3s_post_create.yml'
         cfg = render_env_into(read_file(tmpl))
-        d = dict(key_proxy=key_proxy, key_local=read_file(E('FN_SSH_KEY') + '.pub'))
+        if not exists(pmpl):
+            return cfg
+        fn = E('FN_SSH_KEY') + '.pub'
+        if not exists(fn):
+            log.warn('No SSH key found', fn=fn)
+        d = dict(key_proxy=key_proxy, key_local=read_file(fn, ''))
         return cfg + render_env_into(read_file(pmpl), add=d)
 
     def recover_config():
