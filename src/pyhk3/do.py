@@ -1,5 +1,6 @@
 import yaml
-
+from .defaults import envdefaults
+from .tools import env
 from .create import hk3s, tools, local
 from .hapi import by_name, hapi, ips, need_env
 from .tools import die, log, shw, ssh
@@ -57,8 +58,19 @@ class recover:
         shw(hk3s.recover_config)
 
 
+def show_env(match=''):
+    for k in sorted(envdefaults.__dict__):
+        if k[0] != '_' and match in k.lower():
+            kl = k.lower()
+            v = env(k)
+            if 'token' in kl or 'secret' in kl or 'pass' in kl:
+                v = v[:4] + '*' * min(50, (len(v) - 4))
+            print(f'{k}={v}')
+
+
 class do:
     ssh = run_remote
     delete = delete
     download_kubectl = local.download_kubectl
     port_forward = port_forward
+    show_env = show_env

@@ -83,7 +83,8 @@ def env(key, dflt=None):
         v = getattr(envdefaults, key, dflt)
     if str(v).startswith('py:'):
         v = pyval(key, v[3:], dflt)
-    elif str(v).startswith('pass:'):
+    # not elif, pyval may return pass:...
+    if str(v).startswith('pass:'):
         x = _secrets.get(v, nil)
         if x == nil:
             x = run(['pass', 'show', v[5:]], capture_output=True, text=True) or dflt

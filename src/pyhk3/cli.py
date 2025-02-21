@@ -4,9 +4,21 @@ from .tools import T0, die, log, now, shw, called
 from inspect import signature as sig
 from functools import partial
 from .create import create, hk3s
+from .gitops import gitops
 from .do import do, recover
 from rich.console import Console
 from rich.tree import Tree
+
+
+class pyhk3:
+    """main class"""
+
+    create = create
+    do = do
+    recover = recover
+    hk3s = hk3s
+    gitops = gitops
+
 
 console = Console()
 
@@ -20,8 +32,10 @@ def tc(cls):
     return f'{B(cls.__name__)} {D(cls)}'
 
 
-def tv(fnc):
-    return f'{fnc.__name__} {D(fnc)}'
+def tv(fnc, name='xxx'):
+    n = fnc.__name__
+    n = '' if n == name else n
+    return f'{n} {D(fnc)}'
 
 
 def cls_help(cls, inittree=None):
@@ -33,7 +47,7 @@ def cls_help(cls, inittree=None):
             cls_help(v, tr)
             continue
         if not isinstance(v, list):
-            tree.add(f'{B(k)} {tv(v)}')
+            tree.add(f'{B(k)} {tv(v, name=k)}')
             continue
         tr = tree.add(B(k))
         for m in v:
@@ -41,13 +55,6 @@ def cls_help(cls, inittree=None):
     if not inittree:
         console.print(tree)
         sys.exit(0)
-
-
-class pyhk3:
-    create = create
-    do = do
-    recover = recover
-    hk3s = hk3s
 
 
 def create_partial(funcs, args, argv, x):

@@ -6,7 +6,7 @@ set export
 set unstable
 set script-interpreter := ['uv', 'run']
 alias c := create-cluster
-alias cfg := render-config
+alias cfg := pyhk3-config
 alias t := test
 alias p := pyhk3
 alias pf := port-forward
@@ -24,11 +24,10 @@ do *ARGS:
 ssh *ARGS:
   just p do ssh {{ARGS}}
 
-render-config:
+pyhk3-config *ARGS:
   just p hk3s render_config
-  
-port-forward:
-  just p do port_forward
+  just p do show_env {{ARGS}}
+
 
 [confirm('Sure to destroy all servers of the cluster?')]
 rm:
@@ -49,8 +48,17 @@ create-cluster:
 download-kubectl:
   just p do download_kubectl
 
+# enables a port-forward to proxy, so that kubectl, when downloaded, can be used
+port-forward:
+  just p do port_forward
+
+
+install-gitops:
+  just p gitops install
+
+
 test:
-  just render-config
+  just pyhk3-config
   uv run pytest ./tests/test_setup.py
 
 publish:

@@ -11,12 +11,11 @@ except ImportError:
     sec = {}
 
 
+DNS_API_TOKEN = sec.get('DNS_API_TOKEN', '...')
 DOMAIN = sec.get('DOMAIN', 'cluster.company.net')
 EMAIL = sec.get('EMAIL', 'my.email@company.net')
 FN_SSH_KEY = sec.get('FN_SSH_KEY', '~/.ssh/hetzner-cluster')
 GITOPS_HOST = sec.get('GITOPS_HOST', 'gitlab.company.com')
-
-DNS_API_TOKEN = sec.get('DNS_API_TOKEN', '...')
 GITOPS_TOKEN = sec.get('GITOPS_TOKEN', '...')
 HCLOUD_TOKEN = sec.get('HCLOUD_TOKEN', '...')
 HCLOUD_TOKEN_WRITE = sec.get('HCLOUD_TOKEN_WRITE', '...')

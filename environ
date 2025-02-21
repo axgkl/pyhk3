@@ -8,7 +8,6 @@ NAME="company"
 #
 # For others use py:...
 DNS_API_TOKEN="py:keyval"
-GITOPS_TOKEN="py:keyval"
 HCLOUD_TOKEN="py:keyval"
 HCLOUD_TOKEN_WRITE="py:keyval"
 
@@ -27,4 +26,4 @@ GITOPS_HOST="py:keyval"
 GITOPS_OWNER="company"
 GITOPS_PATH="clusters/staging"
 GITOPS_REPO="k8s"
-GITOPS_TOKEN=""
+GITOPS_TOKEN="py:keyval"
