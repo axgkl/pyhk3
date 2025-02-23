@@ -55,5 +55,39 @@ def install():
         add_to_pass(s, priv)
 
 
+def clone(url, into):
+    sh.rm('-rf', into)
+    sh.git.clone(url, into)
+    log.info('Cloned', url=url, into=into)
+
+
+def prepare_repo(tmpl_url, into_repo=None):
+    """Prepare the repository for flux."""
+    sh.mkdir('-p', './tmp')
+    if not into_repo:
+        into_repo = f'git@{E("GITOPS_HOST")}:{E("GITOPS_OWNER")}/{E("GITOPS_REPO")}'
+    di = './tmp/into.git'
+    clone(into_repo, di)
+
+    if tmpl_url.startswith('gh:'):
+        tmpl_url = f'https://github.com{tmpl_url[3:]}'
+    d_src = './tmp/tmpl.git'
+    clone(tmpl_url, d_src)
+
+    for r in ['README.md', 'LICENSE', 'CODE_OF_CONDUCT.md', 'CONTRIBUTING.md', '.git']:
+        sh.rm('-rf', d_src + '/' + r)
+
+    tar_command = sh.tar('cf', '-', '.', _cwd=d_src, _piped=True)
+    sh.tar('xf', '-', '-C', di, _in=tar_command)
+    log.info('copied', src=d_src, into=di)
+
+    with sh.pushd(d_src):
+        breakpoint()  # FIXME BREAKPOINT
+        sh.git('add', '.')
+        sh.git('commit', '-am', f'flux: initial commit\n\n{tmpl_url}\n->\n{into_repo}')
+        sh.git('push')
+
+
 class flux:
+    prepare_repo = prepare_repo
     install = install

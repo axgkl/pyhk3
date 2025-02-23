@@ -65,6 +65,8 @@ def create_partial(funcs, args, argv, x):
         l = l[-1]
     kw, varg = {}, ()
     for _, p in sig(l[-1]).parameters.items():
+        if not args:
+            break
         if int(p.kind) == 1:  # positional_or_keyword
             varg += (args.pop(0),)
         elif int(p.kind) == 2:  # vararg

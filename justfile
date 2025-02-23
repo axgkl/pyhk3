@@ -54,6 +54,7 @@ port-forward:
 
 
 install-flux:
+  just p flux prepare_repo 'gh:/fluxcd/flux2-kustomize-helm-example'
   just p flux install
 
 
