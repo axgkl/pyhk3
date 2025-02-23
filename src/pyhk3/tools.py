@@ -1,6 +1,7 @@
 import structlog
 import os
 import sys
+import sh
 import json
 import subprocess
 import importlib.util
@@ -77,6 +78,9 @@ def pyval(k, fn, dflt=None):
     return v
 
 
+env_key_on_missing = '__env_key_on_missing__'
+
+
 def env(key, dflt=None):
     v = os.environ.get(key, nil)
     if v == nil:
@@ -87,10 +91,31 @@ def env(key, dflt=None):
     if str(v).startswith('pass:'):
         x = _secrets.get(v, nil)
         if x == nil:
-            x = run(['pass', 'show', v[5:]], capture_output=True, text=True) or dflt
+            try:
+                x = pass_(key).show(v[5:], _err=[1, 2]).strip()
+            except Exception as _:
+                # special case: allows to calc and  set the value later:
+                if dflt == env_key_on_missing:
+                    return v
             _secrets[v] = x
         v = x
     return v
+
+
+def add_to_pass(key, val):
+    log.warn('Adding key to pass', n=key[5:])
+    pass_(key).insert('-m', key[5:], _in=val)
+    if not need_env(key) == val:
+        die('Failed to update pass', key=key[5:], value=val)
+
+
+def pass_(key=''):
+    p = getattr(sh, 'pass', None)
+    h = 'Install pass: https://www.passwordstore.org/'
+    h += '- or supply a wrapper, supporting show and insert [-m] methods, e.g. for reading/writing files'
+    if p is None:
+        die('pass utility not found', hint=h, required_for=key)
+    return p
 
 
 def dt(_, __, e):
@@ -112,17 +137,25 @@ structlog.configure(
 log = structlog.get_logger()
 
 
-def die(msg, **kw):
+def die(msg, only_raise=False, **kw):
     log.fatal(msg, **kw)
+    if only_raise:
+        raise Exception(msg)
     sys.exit(1)
 
 
-def run(cmd, bg=False, **kw):
+def run(cmd, bg=False, no_fail=False, **kw):
+    i = kw.get('input')
+    if i is not None:
+        kw['input'] = i.encode() if isinstance(i, str) else i
     if isinstance(cmd, str):
         cmd = cmd.split()
     pipe = kw.get('pipe', '')
     pipe = pipe if not len(pipe) > 20 else f'{pipe[:20]}...'
-    log.debug('⚙️ Cmd', cmd=cmd, pipe=pipe)
+    lw = {}
+    if pipe:
+        lw['pipe'] = pipe
+    log.debug(f'⚙️ {" ".join(cmd)}', **lw)
     if bg:
         r = subprocess.Popen(cmd, start_new_session=True)
         # r.communicate()
@@ -130,14 +163,17 @@ def run(cmd, bg=False, **kw):
 
     r = subprocess.run(cmd, **kw)
     if r.returncode != 0:
-        die('Command failed', cmd=cmd, returncode=r.returncode)
+        die('Command failed', cmd=cmd, returncode=r.returncode, only_raise=no_fail)
     return r.stdout.strip() if r.stdout else ''
 
 
-def need_env(k, dflt=None):
+def need_env(k, dflt=None, _home_repl=False):
     v = env(k, dflt)
     if v is None:
         die(f'Missing env var ${k}')
+    if _home_repl:
+        for k in '~', '$HOME':
+            v = v.replace(k, os.environ['HOME'])
     return v
 
 
@@ -145,7 +181,7 @@ def ssh(ip, port=None, cmd=None, input=None, send_env=None, capture_output=True,
     cmd = cmd if cmd is not None else 'bash -s'
     port = port if port is not None else int(env('SSH_PORT', 22))
     c = f'ssh -p {port} -o StrictHostKeyChecking=accept-new -i'.split()
-    cmd = c + [need_env('FN_SSH_KEY'), f'root@{ip}', cmd]
+    cmd = c + [need_env('FN_SSH_KEY', _home_repl=True), f'root@{ip}', cmd]
     kw['capture_output'] = capture_output
     for key in send_env or []:
         cmd.insert(1, f'SendEnv={key}')

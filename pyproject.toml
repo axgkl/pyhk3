@@ -57,6 +57,7 @@ extend-select = ["Q"]
 select = ["E", "F", "B"] # Enable flake8-bugbear (`B`) rules.
 ignore = [
   "E501", # Never enforce `E501` (line length violations).
+  "E713", # not in condition
   "E741", # short var names
   "E731", # no lambda
   "B006", # mutables in signature

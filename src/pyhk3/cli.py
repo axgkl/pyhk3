@@ -4,7 +4,7 @@ from .tools import T0, die, log, now, shw, called
 from inspect import signature as sig
 from functools import partial
 from .create import create, hk3s
-from .gitops import gitops
+from .flux import flux
 from .do import do, recover
 from rich.console import Console
 from rich.tree import Tree
@@ -17,7 +17,7 @@ class pyhk3:
     do = do
     recover = recover
     hk3s = hk3s
-    gitops = gitops
+    flux = flux
 
 
 console = Console()

@@ -1,16 +1,19 @@
 binenv_custom_base = 'https://github.com/axgkl/binaries/raw/master'
 dflt_img = 'ubuntu-24.04'
 dflt_type = 'cx22'
+tools_proxy = 'helm 3.16.3 kubectl 1.31.3 hetzner-k3s 2.2.3 btop 1.4.0'
+tools_local = 'flux 2.4.0 yq 4.44.5 age-keygen 1.2.0 sops 3.9.1'
 
 
 class envdefaults:
-    BINENV_TOOLS_PROXY = 'helm 3.16.3 kubectl 1.31.3 hetzner-k3s 2.2.3 btop 1.4.0'
+    BINENV_TOOLS_PROXY = tools_proxy
     DNS_API_TOKEN = 'your-token-to-add-a-wildcard-dns-entry-at-provider'
     DNS_PROVIDER = 'digitalocean'  # see dns.py for others
     DNS_TTL = 60
     DOMAIN = 'k8s.mycompany.net'
     EMAIL = 'me@mycompany.com'
     FN_SSH_KEY = '$HOME/.ssh/hetzner-cluster'  # created if not exists, also on hcloud
+    GITOPS_FLUX_PRIV_SECRET = ''
     GITOPS_BRANCH = 'main'
     GITOPS_HOST = 'gitlab.mycompany.com'
     GITOPS_OWNER = 'company'

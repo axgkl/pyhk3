@@ -19,3 +19,6 @@ GITOPS_HOST = sec.get('GITOPS_HOST', 'gitlab.company.com')
 GITOPS_TOKEN = sec.get('GITOPS_TOKEN', '...')
 HCLOUD_TOKEN = sec.get('HCLOUD_TOKEN', '...')
 HCLOUD_TOKEN_WRITE = sec.get('HCLOUD_TOKEN_WRITE', '...')
+
+# delivering a pass value is also possible:
+GITOPS_FLUX_PRIV_SECRET = sec.get('GITOPS_FLUX_PRIV_SECRET', 'pass:my/flux_priv_secret')

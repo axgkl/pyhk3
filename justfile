@@ -53,8 +53,8 @@ port-forward:
   just p do port_forward
 
 
-install-gitops:
-  just p gitops install
+install-flux:
+  just p flux install
 
 
 test:
