@@ -36,13 +36,17 @@ def ssh_add_no_hostkey_check(args):
 
 
 def ensure_forward(_chck=False):
+    if not _chck:
+        log.info('Ensure port forward for kubectl')
     m = f'{E("NAME")}-master1'
     try:
-        r = run('kubectl get nodes', no_fail=True, capture_output=True).decode()
+        r = sh.kubectl.get.nodes()
         if m in r:
             return True
         die('Wrong kubernetes cluster', notfound=m, output=r)
-    except Exception as _:
+    except Exception as ex:
+        if 'certificate' in str(ex):
+            die('kubectl certificate error', hint='do download_kubectl')
         if _chck:
             return 0
         port_forward(nohup=True)

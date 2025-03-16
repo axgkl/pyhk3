@@ -1,6 +1,7 @@
 import yaml
+import os
 from .defaults import envdefaults
-from .tools import env
+from .tools import env, confirm
 from .create import hk3s, tools, local
 from .hapi import by_name, hapi, ips, need_env
 from .tools import die, log, shw, ssh
@@ -12,6 +13,12 @@ clearip = tools.clear_ip_from_known_hosts
 
 def delete(name):
     """Deleting objects by name, via hapi"""
+    if name == 'all':
+        N = E('NAME')
+        r = [x['name'] for x in hapi.get('servers') if x['name'].startswith(N + '-')]
+        confirm(f'Delete {r}')
+        return [delete(i) for i in r]
+
     S = by_name('servers', name)
     if not S:
         return log.info('Not found', name=name)
@@ -68,9 +75,26 @@ def show_env(match=''):
             print(f'{k}={v}')
 
 
+def namespace_force_delete(namespace):
+    """Force delete a namespace. Last result when delete ns got stuck"""
+    kw = {}
+    if namespace == 'flux-system':
+        kw['hint'] = 'use "flux uninstall" instead'
+    cmd = f"kubectl get namespace {namespace} -o json | jq '.spec.finalizers=[]' | kubectl replace --raw /api/v1/namespaces/{namespace}/finalize -f -"
+    log.info('About brutally delete a namespace', cmd=cmd, **kw)
+    confirm(f'Force delete ns {namespace}?', default=False)
+    os.system(cmd)
+    log.info('Namespace deleted brutally')
+    cmd = f'kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get -n {namespace}'
+    log.info(cmd, wait_confirm=True, hint='possible long list upcoming')
+    confirm('Listing now all remaining resources', default=True)
+    os.system(cmd)
+
+
 class do:
     ssh = run_remote
     delete = delete
     download_kubectl = local.download_kubectl
     port_forward = port_forward
     show_env = show_env
+    ns_del_force = namespace_force_delete

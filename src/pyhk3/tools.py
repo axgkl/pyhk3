@@ -21,18 +21,26 @@ T0 = now()
 exists = os.path.exists
 
 
-confirm = Confirm.ask
+class const:
+    silent = 'silent'
+
+
+def confirm(msg, default=False):
+    r = Confirm.ask(msg, default=default)
+    if not r:
+        die('Aborted by user')
+
 
 _secrets = {}
 
 called = []
 
 
-def shw(f, *a):
+def shw(f, *a, **kw):
     origf = getattr(f, 'func', f)
     n = origf.__name__
     called.append(n)
-    return log.info(f'⏺️ {n}') or f(*a)
+    return log.info(f'⏺️ {n}') or f(*a, **kw)
 
 
 class TemplRepl:
@@ -102,10 +110,20 @@ def env(key, dflt=None):
     return v
 
 
+def need_env(k, dflt=None, _home_repl=False):
+    v = env(k, dflt)
+    if v is None:
+        die(f'Missing env var ${k}')
+    if _home_repl:
+        for k in '~', '$HOME':
+            v = v.replace(k, os.environ['HOME'])
+    return v
+
+
 def add_to_pass(key, val):
     log.warn('Adding key to pass', n=key[5:])
     pass_(key).insert('-m', key[5:], _in=val)
-    if not need_env(key) == val:
+    if not pass_(key).show(key[5:], _err=[1, 2]).strip() == val:
         die('Failed to update pass', key=key[5:], value=val)
 
 
@@ -137,16 +155,18 @@ structlog.configure(
 log = structlog.get_logger()
 
 
-def die(msg, only_raise=False, **kw):
+def die(msg, no_fail=False, **kw):
     log.fatal(msg, **kw)
-    if only_raise:
+    if no_fail:
+        if no_fail == const.silent:
+            return log.info('Ignoring failure')
         raise Exception(msg)
     sys.exit(1)
 
 
 def run(cmd, bg=False, no_fail=False, **kw):
     i = kw.get('input')
-    if i is not None:
+    if i is not None and not kw.get('text', False):
         kw['input'] = i.encode() if isinstance(i, str) else i
     if isinstance(cmd, str):
         cmd = cmd.split()
@@ -163,18 +183,8 @@ def run(cmd, bg=False, no_fail=False, **kw):
 
     r = subprocess.run(cmd, **kw)
     if r.returncode != 0:
-        die('Command failed', cmd=cmd, returncode=r.returncode, only_raise=no_fail)
+        die('Command failed', cmd=cmd, returncode=r.returncode, no_fail=no_fail)
     return r.stdout.strip() if r.stdout else ''
-
-
-def need_env(k, dflt=None, _home_repl=False):
-    v = env(k, dflt)
-    if v is None:
-        die(f'Missing env var ${k}')
-    if _home_repl:
-        for k in '~', '$HOME':
-            v = v.replace(k, os.environ['HOME'])
-    return v
 
 
 def ssh(ip, port=None, cmd=None, input=None, send_env=None, capture_output=True, **kw):

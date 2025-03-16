@@ -178,9 +178,13 @@ class proxy_:
 
 class tools:
     def ensure_ssh_key_known_to_hetzner():
+        """We return the name of any key which matches the fingerprint of the local key
+
+        If None: we create a new one and upload
+        """
         have = hapi.get('ssh_keys') or []
         fps = set([k['fingerprint'] for k in have])
-        fp = E('FN_SSH_KEY') + '.pub'
+        fp = E('FN_SSH_KEY', _home_repl=True) + '.pub'
         r = run(
             ['ssh-keygen', '-l', '-E', 'md5', '-f', fp],
             capture_output=True,
@@ -192,8 +196,7 @@ class tools:
         n = E('NAME')
         if n in [k['name'] for k in have]:
             msg = f'proceed to delete and re-add the SSH key {n}'
-            if not confirm(msg, default=False):
-                die('unconfirmed')
+            confirm(msg, default=False)
             f = [k['id'] for k in have if k['name'] == n]
             r = hapi.delete('ssh_keys', f[0])
         r = hapi.post('ssh_keys', data={'name': n, 'public_key': open(fp).read()})
@@ -312,7 +315,8 @@ class hk3s:
         ip = ips('proxy')['pub']
         v = os.environ.get('HCLOUD_TOKEN')
         os.environ['HCLOUD_TOKEN'] = E('HCLOUD_TOKEN_WRITE')
-        cmd = 'kubectl get nodes 2>/dev/null && echo "Skipping install - already running" || '
+        cmd = 'mkdir -p /root/.kube && '
+        cmd += 'kubectl get nodes 2>/dev/null && echo "Skipping install - already running" || '
         cmd += 'hetzner-k3s create --config /root/config.yml'
         ssh(ip, cmd=cmd, capture_output=False, send_env=['HCLOUD_TOKEN'])
         os.environ['HCLOUD_TOKEN'] = v

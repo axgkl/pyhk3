@@ -28,11 +28,12 @@ pyhk3-config *ARGS:
   just p hk3s render_config
   just p do show_env {{ARGS}}
 
+env *ARGS:
+  just p do show_env {{ARGS}}
 
 [confirm('Sure to destroy all servers of the cluster?')]
 rm:
-  just p do remove all
-
+  just p do delete all
 
 
 [confirm('Sure to destroy proxy (if existing) and recreate it?')]
@@ -53,10 +54,13 @@ port-forward:
   just p do port_forward
 
 
-install-flux:
-  just p flux prepare_repo 'gh:/fluxcd/flux2-kustomize-helm-example'
+flux-install:
   just p flux install
+  just p flux add_sops_secret
+  just p flux add_tmpl 'gh:/fluxcd/flux2-kustomize-helm-example'
 
+flux-uninstall:
+  just p flux uninstall
 
 test:
   just pyhk3-config

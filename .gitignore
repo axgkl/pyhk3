@@ -10,3 +10,4 @@ wheels/
 .venv
 README.md
 mysecrets.py
+tmp
