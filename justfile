@@ -10,7 +10,10 @@ alias cfg := pyhk3-config
 alias t := test
 alias p := pyhk3
 alias pf := port-forward
+alias fk := flux-kubeconform
 alias elk := download-kubectl
+
+export FLUX_REPO := 'tmp/our-repo.git'
 
 default:
   @just --list
@@ -61,6 +64,9 @@ flux-install:
 
 flux-uninstall:
   just p flux uninstall
+
+flux-kubeconform:
+  cd "$FLUX_REPO" && scripts/validate.sh
 
 test:
   just pyhk3-config
