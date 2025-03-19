@@ -10,6 +10,8 @@ from ..ssh import ensure_forward
 from ..tools import confirm, die, log, read_file, run, const, shw, write_file
 from ..tools import need_env as E
 
+d_our_repo = E('FLUX_REPO', '.')
+
 
 class tools:
     def fn_pubkey():
@@ -30,10 +32,10 @@ class tools:
         return into
 
     def get_repo(url=None, d=None):
-        sh.mkdir('-p', './tmp')
+        sh.mkdir('-p', os.path.dirname(d_our_repo))
         if not url:
             url = f'git@{E("GITOPS_HOST")}:{E("GITOPS_OWNER")}/{E("GITOPS_REPO")}'
-            d = './tmp/our-repo.git'
+            d = d_our_repo
         return tools.git_clone_after_rm(url, d)
 
 
@@ -96,6 +98,7 @@ def add_tmpl(tmpl_url):
     # return add_dns_secret(d_repo, pubkey)
     if tmpl_url.startswith('gh:'):
         tmpl_url = f'https://github.com{tmpl_url[3:]}'
+    os.makedirs('./tmp', exist_ok=True)
     d_tmpl = './tmp/tmpl.git'
     rm = ['README.md', 'LICENSE', 'CODE_OF_CONDUCT.md', 'CONTRIBUTING.md', '.git']
     tools.git_clone_after_rm(tmpl_url, d_tmpl, rm_after=rm)
@@ -124,7 +127,7 @@ def flux_kust_helm_exmpl(d):
         provider = E('DNS_PROVIDER')
         token = E('DNS_API_TOKEN')
         token = base64.b64encode(token.encode('utf-8')).decode('utf-8')
-        y = T % {'provider': provider, 'token': token}
+        y = T_DNS_SECRET % {'provider': provider, 'token': token}
         dc = f'{d}/{pth}'
         fn = f'{dc}/dns-secret.yaml'
         fk = f'{dc}/kustomization.yaml'
@@ -225,60 +228,15 @@ def uninstall():
     log.info('empty repo pushed', repo=d_our_repo)
 
 
-T = """
+T_DNS_SECRET = """
 apiVersion: v1
 kind: Secret
 metadata:
     name: %(provider)s-dns-token
-    namespace: default
+    namespace: cert-manager
 data:
     access-token: %(token)s
 """
-
-TD = """
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-"""
-
-K = """
-apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
-kind: Kustomization
-metadata:
-  name: test
-  namespace: flux-system
-spec:
-  interval: 10m0s
-  path: ./clusters/production
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-  # Decryption configuration starts here
-  decryption:
-    provider: sops
-    secretRef:
-      name: sops-age
-"""
-
-
-# def rsync_overlay(d_src, d_tgt):
-#     sh.rsync('-a', '--ignore-existing', f'{d_src}/', d_tgt)
-#     log.info('copied', src=d_src, into=d_tgt)
-# def restore_flux(d):
-#     for k in 'production', 'staging':
-#         for f in 'gotk-components.yaml', 'gotk-sync.yaml':
-#             fnp = f'clusters/{k}/flux-system/{f}'
-#             if not fnp.startswith(E('GITOPS_PATH')):
-#                 continue
-#             fn = f'{d}/{fnp}'
-#             if not os.path.exists(fn):
-#                 continue
-#             os.remove(fn)
-#             with sh.pushd(d):
-#                 sh.git.checkout(fnp)
-#
 
 
 class flux:
