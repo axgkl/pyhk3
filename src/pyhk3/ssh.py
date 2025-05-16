@@ -68,8 +68,12 @@ def port_forward(nohup=False):
     run_remote('master1', *c, _term=True, _fwd=fwd, _nohup=nohup)
 
 
-def run_remote(name, *cmd, _fwd=None, _term=False, _fg=True, _nohup=False):
+def run_remote(*cmd, _fwd=None, _term=False, _fg=True, _nohup=False):
     """ssh to servers, e.g. ssh proxy [cmd]. autovia via proxy built in."""
+    if not cmd:
+        die('name argument required', hint='ssh proxy')
+    name = cmd[0]
+    cmd = tuple(list(cmd[1:]))
     log.debug('Run remote', name=name, cmd=cmd)
     ip_pub, ip = ips_of_host(name)
     args = ssh(ip_pub, cmd='args')
