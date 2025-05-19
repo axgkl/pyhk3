@@ -12,7 +12,7 @@ from ..tools import need_env as E
 from ..tools import cmd
 
 d_our_repo = E('FLUX_REPO', '.')
-req_cmds = cmd('kubectl', 'sops', use='--help') + cmd('age', 'git', 'flux')
+req_cmds = cmd('kubectl', 'sops', 'helm', use='--help') + cmd('age', 'git', 'flux')
 
 
 class tools:
@@ -90,7 +90,6 @@ def add_sops_secret():
     log.info('Decryption provider added to gotk-sync.yaml')
 
 
-
 def add_tmpl(tmpl_url):
     """Prepare the repository for flux
 
@@ -114,7 +113,7 @@ def add_tmpl(tmpl_url):
             log.info('Restoring', fn=k)
             sh.git.checkout(k)
     git(d_our_repo, add='.', msg=f'templ overlay\n\n{tmpl_url}\n->\n{d_our_repo}')
-    push_and_reconcile(d_our_repo) # secret reqs certmanager, one go did not work
+    push_and_reconcile(d_our_repo)  # secret reqs certmanager, one go did not work
     adapt_template(d_our_repo, tmpl_url.split('/')[-1])
 
 
@@ -124,6 +123,7 @@ def adapt_template(d_our_repo, tmpl):
     modifier_func(d_our_repo)
     push_and_reconcile(d_our_repo)
 
+
 def push_and_reconcile(d_our_repo):
     q = 'Can i push it? Please, check the repo commits first:'
     confirm(f'{q} {d_our_repo}', default=True)
@@ -131,10 +131,8 @@ def push_and_reconcile(d_our_repo):
     shw(reconcile)
 
 
-
 def flux_kust_helm_exmpl(d):
     def add_dns_secret(d):
-        breakpoint()  # FIXME BREAKPOINT
         pth = E('GITOPS_PATH')
         pubkey = read_file(f'{d}/{tools.fn_pubkey()}').strip()
         provider = E('DNS_PROVIDER')
@@ -190,10 +188,24 @@ def flux_kust_helm_exmpl(d):
                 ctrl['service']['nodePorts'] = {'http': 30080, 'https': 30443}
         write_file(fn, yaml.dump_all(l))
 
+    def annotate_podinfo(d):
+        fn = f'{d}/apps/production/podinfo-values.yaml'
+        l = list(yaml.safe_load_all(read_file(fn)))
+        ingress = l[0]['spec']['values']['ingress']
+        ingress['annotations'] = {
+            'cert-manager.io/cluster-issuer': 'letsencrypt',
+            'kubernetes.io/tls-acme': 'true',
+        }
+        ingress['tls'] = [
+            {'secretName': 'podinfo-tls', 'hosts': ['podinfo-production.axiros.axlc.net']}
+        ]
+        write_file(fn, yaml.dump_all(l))
+
     do(add_dns_secret, d)
     do(set_dns01_solver, d)
     do(enable_dns, d)
     do(enable_nginx_proxyproto_node_ports, d)
+    do(annotate_podinfo, d)
 
 
 def do(f, d, *a):
