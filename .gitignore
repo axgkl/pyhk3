@@ -11,3 +11,4 @@ wheels/
 README.md
 mysecrets.py
 tmp
+.DS_Store

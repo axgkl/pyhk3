@@ -58,6 +58,7 @@ port-forward:
 
 
 flux-install:
+  just p flux ensure_requirements
   just p flux install
   just p flux add_sops_secret
   just p flux add_tmpl 'gh:/fluxcd/flux2-kustomize-helm-example'

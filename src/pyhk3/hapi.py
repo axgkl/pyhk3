@@ -16,7 +16,7 @@ icons = {
 
 
 def headers():
-    api_token = env('HCLOUD_TOKEN_WRITE')
+    api_token = env('HCLOUD_TOKEN_WRITE', 0)
     if not api_token:
         api_token = need_env('HCLOUD_TOKEN')
     return {'Authorization': f'Bearer {api_token}', 'Content-Type': 'application/json'}

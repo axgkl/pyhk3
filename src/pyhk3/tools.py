@@ -25,6 +25,20 @@ class const:
     silent = 'silent'
 
 
+def cmd(*cmd, use='--version'):
+    return [f'{c} {use}' for c in cmd]
+
+
+def require_cmd(*cmd):
+    l = [f'{c} 2>/dev/null 1>/dev/null' for c in cmd]
+    c = ' && '.join(l)
+    if os.system(c) == 0:
+        return
+    if os.system(l[0]):
+        die(f'Missing required command: {cmd[0]}')
+    [require_cmd(c) for c in cmd]
+
+
 def confirm(msg, default=False):
     r = Confirm.ask(msg, default=default)
     if not r:
@@ -39,8 +53,10 @@ called = []
 def shw(f, *a, **kw):
     origf = getattr(f, 'func', f)
     n = origf.__name__
-    called.append(n)
-    return log.info(f'⏺️ {n}') or f(*a, **kw)
+    if not 'lambda' in n:
+        called.append(n)
+        log.info(f'⏺️ {n}')
+    return f(*a, **kw)
 
 
 class TemplRepl:
@@ -125,7 +141,7 @@ def need_env(k, dflt=None, _home_repl=False):
 
 def add_to_pass(key, val):
     log.warn('Adding key to pass', n=key[5:])
-    pass_(key).insert('-m', key[5:], _in=val)
+    getattr(sh, 'pass', None).insert('-m', key[5:], _in=val)
     if not pass_(key).show(key[5:], _err=[1, 2]).strip() == val:
         die('Failed to update pass', key=key[5:], value=val)
 
