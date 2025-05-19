@@ -100,11 +100,14 @@ def env(key, dflt=None):
         x = _secrets.get(v, nil)
         if x == nil:
             try:
-                x = pass_(key).show(v[5:], _err=[1, 2]).strip()
-            except Exception as _:
+                x = pass_(v[5:], for_=key)  # .show(v[5:], _fg=True).strip()
+            except Exception as ex:
                 # special case: allows to calc and  set the value later:
                 if dflt == env_key_on_missing:
                     return v
+                if dflt is None:
+                    die('Running pass utility', key=v[5:], exc=ex)
+                return dflt
             _secrets[v] = x
         v = x
     return v
@@ -127,13 +130,26 @@ def add_to_pass(key, val):
         die('Failed to update pass', key=key[5:], value=val)
 
 
-def pass_(key=''):
-    p = getattr(sh, 'pass', None)
-    h = 'Install pass: https://www.passwordstore.org/'
-    h += '- or supply a wrapper, supporting show and insert [-m] methods, e.g. for reading/writing files'
-    if p is None:
-        die('pass utility not found', hint=h, required_for=key)
-    return p
+def pass_(key, for_):
+    try:
+        result = subprocess.run(
+            ['pass', 'show', key],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except KeyboardInterrupt as e:
+        die('Interrupted - bye')
+    return result.stdout.strip()
+
+
+# p = getattr(sh, 'pass', None)
+# h = 'Install pass: https://www.passwordstore.org/'
+# h += '- or supply a wrapper, supporting show and insert [-m] methods, e.g. for reading/writing files'
+# if p is None:
+#     die('pass utility not found', hint=h, required_for=key)
+# return p
 
 
 def dt(_, __, e):

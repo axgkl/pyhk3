@@ -7,10 +7,12 @@ import sh
 import yaml
 
 from ..ssh import ensure_forward
-from ..tools import confirm, die, log, read_file, run, const, shw, write_file
+from ..tools import require_cmd, confirm, die, log, read_file, run, const, shw, write_file
 from ..tools import need_env as E
+from ..tools import cmd
 
 d_our_repo = E('FLUX_REPO', '.')
+req_cmds = cmd('kubectl', 'sops', use='--help') + cmd('age', 'git', 'flux')
 
 
 class tools:
@@ -24,6 +26,7 @@ class tools:
         log.info('copied', src=d_src, into=d_tgt)
 
     def git_clone_after_rm(url, into, rm_after=None):
+        """Clone a git repo and remove files after"""
         sh.rm('-rf', into)
         sh.git.clone(url, into)
         for r in rm_after or []:
@@ -87,6 +90,7 @@ def add_sops_secret():
     log.info('Decryption provider added to gotk-sync.yaml')
 
 
+
 def add_tmpl(tmpl_url):
     """Prepare the repository for flux
 
@@ -96,6 +100,7 @@ def add_tmpl(tmpl_url):
     d_our_repo = tools.get_repo()
 
     # return add_dns_secret(d_repo, pubkey)
+
     if tmpl_url.startswith('gh:'):
         tmpl_url = f'https://github.com{tmpl_url[3:]}'
     os.makedirs('./tmp', exist_ok=True)
@@ -109,6 +114,7 @@ def add_tmpl(tmpl_url):
             log.info('Restoring', fn=k)
             sh.git.checkout(k)
     git(d_our_repo, add='.', msg=f'templ overlay\n\n{tmpl_url}\n->\n{d_our_repo}')
+    push_and_reconcile(d_our_repo) # secret reqs certmanager, one go did not work
     adapt_template(d_our_repo, tmpl_url.split('/')[-1])
 
 
@@ -116,12 +122,19 @@ def adapt_template(d_our_repo, tmpl):
     """Add decryption provider to flux-system"""
     modifier_func = tmpl_modifiers.get(tmpl, lambda d: d)
     modifier_func(d_our_repo)
-    confirm(f'Check repo diff before pushing {d_our_repo}', default=True)
+    push_and_reconcile(d_our_repo)
+
+def push_and_reconcile(d_our_repo):
+    q = 'Can i push it? Please, check the repo commits first:'
+    confirm(f'{q} {d_our_repo}', default=True)
     git(d_our_repo, push=True)
+    shw(reconcile)
+
 
 
 def flux_kust_helm_exmpl(d):
     def add_dns_secret(d):
+        breakpoint()  # FIXME BREAKPOINT
         pth = E('GITOPS_PATH')
         pubkey = read_file(f'{d}/{tools.fn_pubkey()}').strip()
         provider = E('DNS_PROVIDER')
@@ -240,6 +253,7 @@ data:
 
 
 class flux:
+    ensure_requirements = lambda: require_cmd(*req_cmds)
     install = install
     add_sops_secret = add_sops_secret
     add_tmpl = add_tmpl
