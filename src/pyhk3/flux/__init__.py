@@ -125,7 +125,7 @@ def adapt_template(d_our_repo, tmpl):
 
 
 def push_and_reconcile(d_our_repo):
-    q = 'Can i push it? Please, check the repo commits first:'
+    q = 'Can I push it? Please, check the repo commits first:'
     confirm(f'{q} {d_our_repo}', default=True)
     git(d_our_repo, push=True)
     shw(reconcile)
@@ -238,6 +238,7 @@ def reconcile():
 
 def uninstall():
     """this is just a temporary helper for repeasted tries of the exmple flux tmpl install"""
+    ensure_forward()
     l = ['cert-manager', 'ingress-nginx', 'podinfo']
     confirm(f'Uninstall flux, cleaning repo, removing {l}?', default=False)
     run('flux uninstall', no_fail=const.silent)
