@@ -34,11 +34,14 @@ class tekton:
         tools.git(d_our_repo, add='.', msg='Tekton setup', push=False)
         write_file(fn_entry, infra + T)
         tools.git(d_our_repo, add='.', msg='Tekton reference', push=True)
-        tools.reconcile()
         log.info('Tekton installation configured. Waiting for Flux to apply changes...')
 
     def port_forward():
         run('kubectl port-forward -n tekton-pipelines svc/tekton-dashboard 9097:9097')
+
+    def reconcile():
+        tools.reconcile()
+        run('flux reconcile kustomization infra-tekton -n flux-system')
 
 
 T = """

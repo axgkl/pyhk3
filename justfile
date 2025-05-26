@@ -72,6 +72,7 @@ flux-kubeconform:
 tekton-install:
   just p tekton ensure_requirements
   just p tekton install
+  just p tekton reconcile
   just p tekton port_forward
 
   
