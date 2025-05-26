@@ -16,6 +16,15 @@ req_cmds = cmd('kubectl', 'sops', 'helm', use='--help') + cmd('age', 'git', 'flu
 
 
 class tools:
+    def read_yaml(fn):
+        return yaml.safe_load(read_file(fn))
+
+    def write_yaml(fn, struct):
+        dump = yaml.dump
+        if isinstance(struct, list):
+            dump = yaml.dump_all
+        write_file(fn, dump(struct, default_flow_style=False), mkdir=True)
+
     def fn_pubkey():
         p = E('GITOPS_PATH').rsplit('/', 1)[-1]
         return f'age-key-{p}.pub'
@@ -34,12 +43,35 @@ class tools:
         log.info('Cloned', url=url, into=into, rm=rm_after)
         return into
 
-    def get_repo(url=None, d=None):
+    def get_clean_repo(url=None, d=None):
         sh.mkdir('-p', os.path.dirname(d_our_repo))
         if not url:
             url = f'git@{E("GITOPS_HOST")}:{E("GITOPS_OWNER")}/{E("GITOPS_REPO")}'
             d = d_our_repo
         return tools.git_clone_after_rm(url, d)
+
+    def do(f, d, *a):
+        shw(f, d, *a)
+        git(d, add='.', msg=f'{f.__name__} (flux setup)')
+
+    def git(d, add='', msg=None, push=False):
+        with sh.pushd(d):
+            if add:
+                sh.git.add(add)
+            if msg:
+                sh.git.commit('-am', msg, _ok_code=[0, 1])
+            if push:
+                sh.git.push()
+
+    def reconcile():
+        # TODO: fix
+        run('flux reconcile source git flux-system')
+        run('flux reconcile kustomization flux-system')
+
+
+do = tools.do
+git = tools.git
+reconcile = tools.reconcile
 
 
 def install():
@@ -64,7 +96,7 @@ def install():
 
 def add_sops_secret():
     ensure_forward()
-    d_our_repo = tools.get_repo()
+    d_our_repo = tools.get_clean_repo()
     s, k = 'sops-age', 'age.agekey'
     priv = kubectl.ensure_secret(s, k, ns='flux-system', envkey='GITOPS_FLUX_PRIV_SECRET')
 
@@ -96,7 +128,7 @@ def add_tmpl(tmpl_url):
     Basically we push flux example into our gitlab repo, so that flux instal finds sth
     into_repo: e.g.: 'gh:/fluxcd/flux2-kustomize-helm-example'
     """
-    d_our_repo = tools.get_repo()
+    d_our_repo = tools.get_clean_repo()
 
     # return add_dns_secret(d_repo, pubkey)
 
@@ -208,32 +240,11 @@ def flux_kust_helm_exmpl(d):
     do(annotate_podinfo, d)
 
 
-def do(f, d, *a):
-    shw(f, d, *a)
-    git(d, add='.', msg=f'{f.__name__} (flux setup)')
-
-
-def git(d, add='', msg=None, push=False):
-    with sh.pushd(d):
-        if add:
-            sh.git.add(add)
-        if msg:
-            sh.git.commit('-am', msg, _ok_code=[0, 1])
-        if push:
-            sh.git.push()
-
-
 tmpl_modifiers = {'flux2-kustomize-helm-example': flux_kust_helm_exmpl}
 
 
 def info():
     run('flux get all --all-namespaces')
-
-
-def reconcile():
-    # TODO: fix
-    run('flux reconcile source git flux-system')
-    run('flux reconcile kustomization flux-system')
 
 
 def uninstall():
@@ -246,7 +257,7 @@ def uninstall():
         run(f'helm uninstall {h}', no_fail=const.silent)
         run(f'kubectl delete namespace {h}', no_fail=const.silent)
     log.info('Emptying repo')
-    d_our_repo = tools.get_repo()
+    d_our_repo = tools.get_clean_repo()
     l = ['clusters', 'infrastructure', 'apps', 'scripts']
     [sh.rm('-rf', f'{d_our_repo}/{k}') for k in l]
     [sh.rm('-f', k) for k in glob(f'{d_our_repo}/age-key-*')]

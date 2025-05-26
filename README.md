@@ -16,6 +16,14 @@ This repo here provides a set of **python functions**, incl. possibly useful sup
 - See [justfile](./justfile) for the available functions.
 - See [tests](./.github/workflows/test.yml) for setup
 
+## Flow From Scratch
+
+1. just create-cluster
+2. just port-forward # kubectl now works
+1. just flux-install
+1. just tekton-install # cloud native build system
+1. just p tekton port_forward # dashboard
+
 
 ## Proxied K3s Installation
 
@@ -30,6 +38,9 @@ flowchart LR
 ```
 
 That bastion server is the only one with a public IP, and is equipped with a l4 loadbalancer, forwarding the traffic into the cluster, like a hetzner loadbalancer would do.
+
+## flux basics
+Entry point is clusters/production - there all yaml files are evaluated, pointing to infra and apps.
 
 
 

@@ -244,6 +244,7 @@ def write_file(fn, s, log=0, mkdir=0, chmod=None, mode='w'):
 
     if isinstance(s, (list, tuple)) and s and isinstance(s[0], str):
         s = '\n'.join(s)
+
     elif isinstance(s, (dict, tuple, list)):  # think of bytes, mode wb
         s = json.dumps(s, default=str)
     e = None
@@ -260,7 +261,7 @@ def write_file(fn, s, log=0, mkdir=0, chmod=None, mode='w'):
         except IOError as ex:
             if mkdir:
                 d = os.path.dirname(fn)
-                os.makedirs(d)
+                os.makedirs(d, exist_ok=True)
                 continue
             e = ex
         except Exception as ex:

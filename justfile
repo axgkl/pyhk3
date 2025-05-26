@@ -69,6 +69,12 @@ flux-uninstall:
 flux-kubeconform:
   cd "$FLUX_REPO" && scripts/validate.sh
 
+tekton-install:
+  just p tekton ensure_requirements
+  just p tekton install
+  just p tekton port_forward
+
+  
 test:
   just pyhk3-config
   uv run pytest ./tests/test_setup.py
