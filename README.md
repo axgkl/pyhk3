@@ -42,7 +42,58 @@ That bastion server is the only one with a public IP, and is equipped with a l4 
 ## flux basics
 Entry point is clusters/production - there all yaml files are evaluated, pointing to infra and apps.
 
+### Q: Why does `dependsOn` work in `clusters/production/infrastructure.yaml` but not in `infrastructure/tekton/config/kustomization.yaml`?
 
+#### A: The key differences between these two files and why `dependsOn` works in one but not the other:
+
+1. `clusters/production/infrastructure.yaml`:
+   - This is a Flux Kustomization resource
+   - It's a Kubernetes custom resource (CR) that Flux uses to manage deployments
+   - It has its own API schema that includes `dependsOn` as a valid field
+   - Example structure:
+   ```yaml
+   apiVersion: kustomize.toolkit.fluxcd.io/v1
+   kind: Kustomization
+   metadata:
+     name: infra-tekton
+   spec:
+     dependsOn:
+       - name: some-other-kustomization
+   ```
+
+2. `infrastructure/tekton/config/kustomization.yaml`:
+   - This is a Kustomize configuration file
+   - It's used by the `kustomize` tool to build Kubernetes manifests
+   - It has a different API schema that doesn't include `dependsOn`
+   - Example structure:
+   ```yaml
+   apiVersion: kustomize.config.k8s.io/v1beta1
+   kind: Kustomization
+   resources:
+     - tektonconfig.yaml
+   ```
+
+### The key differences are:
+
+1. **Purpose**:
+   - Flux Kustomization: Manages the deployment lifecycle, including ordering and dependencies
+   - Kustomize config: Just builds and transforms Kubernetes manifests
+
+2. **API Version**:
+   - Flux Kustomization: `kustomize.toolkit.fluxcd.io/v1`
+   - Kustomize config: `kustomize.config.k8s.io/v1beta1`
+
+3. **Functionality**:
+   - Flux Kustomization: Can handle dependencies, health checks, and deployment ordering
+   - Kustomize config: Only handles manifest building and transformation
+
+That's why the `dependsOn` in `infrastructure.yaml` works - it's telling Flux to wait for the operator to be ready before applying the config. The Kustomize config file can't do this because it's just a build tool, not a deployment manager.
+
+Think of it this way:
+- Kustomize is like a build tool that creates the Kubernetes manifests
+- Flux is like a deployment manager that decides when and how to apply those manifests
+
+The dependency needs to be managed at the deployment level (Flux) rather than the build level (Kustomize).
 
 [hk3s]: https://github.com/vitobotta/hetzner-k3s
 [hcloud]: https://docs.hetzner.cloud/

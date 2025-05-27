@@ -18,16 +18,13 @@ class tekton:
     def install():
         """Install Tekton using Flux.
 
-        This will:
-        1. Create the necessary directory structure
-        2. Set up the Tekton operator
-        3. Configure Tekton components
-        4. Create a Flux kustomization to manage Tekton
+        Just downloaded operator.yaml from here: https://tekton.dev/docs/operator/install/
+
         """
         d_our_repo = tools.get_clean_repo()
         fn_entry = d_our_repo + '/clusters/production/infrastructure.yaml'
         infra = read_file(fn_entry, '')
-        if 0 and 'infra-tekton' in infra:
+        if 'infra-tekton' in infra:
             return log.info('have tekton already in the repo - skipping for idempotency')
         ensure_forward()
         tools.tar_pipe(d_ymls, d_our_repo)
@@ -42,6 +39,18 @@ class tekton:
     def reconcile():
         tools.reconcile()
         run('flux reconcile kustomization infra-tekton -n flux-system')
+
+    def remove_from_cluster():
+        for l in [
+            """for crd in $(kubectl get crd | grep -i tekton | awk '{print $1}'); do kubectl patch crd $crd -p '{"metadata":{"finalizers":[]}}' --type=merge; done""",
+            """kubectl get crd | grep -i tekton | awk '{print $1}' | xargs -I {} kubectl delete crd {}""",
+            """kubectl get ns | grep tekton | awk '{print $1}' | xargs -I {} kubectl delete ns {}""",
+            'echo "checking if all gone:"',
+            'kubectl get all --all-namespaces | grep -i tekton',
+            'kubectl get crd| grep -i tekton',
+        ]:
+            log.info(l) or os.system(l)
+            log.info('You can remove all tekton from your flux repo and reconcile now')
 
 
 T = """
@@ -67,4 +76,23 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-tekton
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infra-tekton
+  interval: 1h
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infrastructure/tekton/config
+  prune: true
+  wait: true
 """
