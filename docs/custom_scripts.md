@@ -1,5 +1,7 @@
 # TODO: Try custom scripts with flux:
 
+https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/configmapgenerator/#configmap-from-file
+
 ## Q: Explain 5. more. Lets say my app server ships with a filesystem, containing '/opt/superapp/custom' directory. Possible to get custom scripts into that filesystem, at container start with that approach?
 
 ### A: Yes, absolutely! Here's a detailed implementation:
