@@ -1164,9 +1164,9 @@ spec:
             - name: OPERATOR_NAME
               value: tekton-operator
             - name: IMAGE_PIPELINES_PROXY
-              value: gcr.io/tekton-releases/github.com/tektoncd/operator/cmd/kubernetes/proxy-webhook:v0.74.0@sha256:44d0937f5c9203f2f39649fe17bcbabaff5e9ef0a6ebfe4fa7e7e968923c5629
+              value: ghcr.io/tektoncd/github.com/tektoncd/operator/cmd/kubernetes/proxy-webhook:v0.74.0
             - name: IMAGE_JOB_PRUNER_TKN
-              value: gcr.io/tekton-releases/dogfooding/tkn@sha256:8d4383ff675cdf42b0006fca9b5b3b0c1d6180ff0013805242c877352e03a359
+              value: gcr.io/tekton-releases/dogfooding/tkn:v0.74.0
             - name: METRICS_DOMAIN
               value: tekton.dev/operator
             - name: VERSION
@@ -1185,7 +1185,7 @@ spec:
                 configMapKeyRef:
                   key: DEFAULT_TARGET_NAMESPACE
                   name: tekton-config-defaults
-          image: gcr.io/tekton-releases/github.com/tektoncd/operator/cmd/kubernetes/operator:v0.74.0@sha256:5bd753b6f140217e9422ee700f60e336dbd84c5201840c38948bad5fc27e6aa7
+          image: ghcr.io/tektoncd/github.com/tektoncd/operator/cmd/kubernetes/operator:v0.74.0
           imagePullPolicy: Always
           name: tekton-operator-lifecycle
         - args:
@@ -1212,7 +1212,7 @@ spec:
               value: tekton.dev/operator
             - name: CONFIG_LEADERELECTION_NAME
               value: tekton-operator-controller-config-leader-election
-          image: gcr.io/tekton-releases/github.com/tektoncd/operator/cmd/kubernetes/operator:v0.74.0@sha256:5bd753b6f140217e9422ee700f60e336dbd84c5201840c38948bad5fc27e6aa7
+          image: ghcr.io/tektoncd/github.com/tektoncd/operator/cmd/kubernetes/operator:v0.74.0
           imagePullPolicy: Always
           name: tekton-operator-cluster-operations
       serviceAccountName: tekton-operator
@@ -1256,7 +1256,7 @@ spec:
               value: tekton-operator-webhook-certs
             - name: METRICS_DOMAIN
               value: tekton.dev/operator
-          image: gcr.io/tekton-releases/github.com/tektoncd/operator/cmd/kubernetes/webhook:v0.74.0@sha256:d5002f7229a48522149ad5ef6d067a3569f77de40738e07538d349ef2ff8151e
+          image: ghcr.io/tektoncd/github.com/tektoncd/operator/cmd/kubernetes/webhook:v0.74.0
           name: tekton-operator-webhook
           ports:
             - containerPort: 8443

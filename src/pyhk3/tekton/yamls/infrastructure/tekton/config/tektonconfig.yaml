@@ -23,5 +23,5 @@ spec:
     resources:
     - pipelinerun
     - taskrun
-    keep: 100
-    schedule: "0 8 * * *"
+    keep: 3
+    schedule: "*/15 * * * *"  # Run every 15 minutes for more frequent cleanup
