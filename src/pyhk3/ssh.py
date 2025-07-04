@@ -38,7 +38,7 @@ def ssh_add_no_hostkey_check(args):
 def ensure_forward(_chck=False):
     if not _chck:
         log.info('Ensure port forward for kubectl')
-    m = f'{E("NAME")}-master1'
+    m = f'{E("NAME")}-master'  # not master1, vcluster might be on master3
     try:
         r = sh.kubectl.get.nodes()
         if m in r:
