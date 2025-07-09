@@ -51,6 +51,7 @@ class git:
         def adder(fn, s=None, d=d, **kw):
             if s:
                 have = read_file(fn, dflt='')
+                kw['mkdir'] = True
                 if not have:
                     write_file(f'{d}/{fn}', s, **kw)
                 else:

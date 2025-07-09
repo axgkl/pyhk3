@@ -67,6 +67,7 @@ flux-install:
   just p flux add_infra_and_apps_skeleton
   just p flux add_infra_ingress_nginx
   just p flux add_infra_certmgr
+  #just p flux add_app 'SRC/yamls::apps/podinfo'
 
 flux-uninstall:
   just p flux uninstall

@@ -27,7 +27,8 @@ class const:
 
 
 def read_yaml(fn):
-    return yaml.safe_load(read_file(fn))
+    s = read_file(fn, dflt=fn)
+    return yaml.safe_load(s)
 
 
 def to_yaml(struct):

@@ -15,7 +15,7 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/_ENV_/controllers
+  path: ./infrastructure/%($GITOPS_ENV)s/controllers
   prune: true
   wait: true
 ---
@@ -33,5 +33,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./infrastructure/_ENV_/configs
+  path: ./infrastructure/%($GITOPS_ENV)s/configs
   prune: true
