@@ -174,7 +174,7 @@ def add_app(name, dir, l=None):
 
 def _merge_kust(y, pth):
     n = read_yaml(y)
-    o = read_yaml(pth)
+    o = read_yaml(pth) if exists(pth) else {'resources': []}
     r = o['resources']
     o.update(n)
     [o['resources'].insert(0, i) for i in r if not i in o['resources']]
