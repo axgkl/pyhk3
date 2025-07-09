@@ -21,10 +21,11 @@ HK_VER="2.2.3"
 HK_LOCATION="fsn1"
 
 # flux
-GITOPS_BRANCH="main"
-GITOPS_HOST="py:keyval"
+GITOPS_ENV="production" # determines branch and path
+#GITOPS_BRANCH="main"
+GITOPS_HOST="py:keyval" # e.g. gitlab.mycompany.com
 GITOPS_OWNER="company"
-GITOPS_PATH="clusters/production"
+#GITOPS_PATH="clusters/production"
 GITOPS_REPO="flux-k8s"
 GITOPS_TOKEN="py:keyval"
 GITOPS_FLUX_PRIV_SECRET="py:keyval"

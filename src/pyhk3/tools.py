@@ -12,6 +12,7 @@ from .cache import nil
 from .defaults import envdefaults
 import time
 
+import yaml
 
 console = Console()
 now = lambda: int(time.time() * 1000)
@@ -23,6 +24,36 @@ exists = os.path.exists
 
 class const:
     silent = 'silent'
+
+
+def read_yaml(fn):
+    return yaml.safe_load(read_file(fn))
+
+
+def to_yaml(struct):
+    dump = yaml.dump
+    if isinstance(struct, list):
+        dump = yaml.dump_all
+    return dump(struct, default_flow_style=False)
+
+
+def write_yaml(fn, struct):
+    write_file(fn, to_yaml(struct), mkdir=True)
+
+
+def tar_pipe(d_src, d_tgt):
+    src_pipe = sh.tar.cf('-', '.', _cwd=d_src, _piped=True)
+    sh.tar.xf('-', '-C', d_tgt, _in=src_pipe)
+    log.info('copied', src=d_src, into=d_tgt)
+
+
+def do_git(f, *a, d=None, **kw):
+    kw['_cwd'] = d
+    if d:
+        kw['_cwd'] = d.replace(os.getcwd(), '.')
+    log.info(f'git {f} {" ".join(list(a))}', **kw)
+    kw['_cwd'] = d
+    return getattr(sh.git, f)(*a, **kw)
 
 
 def cmd(*cmd, use='--version'):
@@ -84,8 +115,12 @@ def render_env_into(tmpl, add=None):
     return tmpl + '\n'
 
 
+def dir_(filename):
+    return os.path.dirname(os.path.abspath(filename))
+
+
 def import_file(filename):
-    d = os.path.dirname(os.path.abspath(filename))
+    d = dir_(filename)
     sys.path.append(d) if d not in sys.path else None
     return importlib.import_module(filename)
 
@@ -142,7 +177,7 @@ def need_env(k, dflt=None, _home_repl=False):
 def add_to_pass(key, val):
     log.warn('Adding key to pass', n=key[5:])
     getattr(sh, 'pass', None).insert('-m', key[5:], _in=val)
-    if not pass_(key).show(key[5:], _err=[1, 2]).strip() == val:
+    if not pass_(key, for_='age').show(key[5:], _err=[1, 2]).strip() == val:
         die('Failed to update pass', key=key[5:], value=val)
 
 
@@ -155,7 +190,7 @@ def pass_(key, for_):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt as _:
         die('Interrupted - bye')
     return result.stdout.strip()
 

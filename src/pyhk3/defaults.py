@@ -14,10 +14,11 @@ class envdefaults:
     EMAIL = 'me@mycompany.com'
     FN_SSH_KEY = '$HOME/.ssh/hetzner-cluster'  # created if not exists, also on hcloud
     GITOPS_FLUX_PRIV_SECRET = ''
-    GITOPS_BRANCH = 'main'
+    GITOPS_ENV = 'dev'  # determines path and branch
+    # GITOPS_BRANCH = 'main'
+    # GITOPS_PATH = 'clusters/staging'
     GITOPS_HOST = 'gitlab.mycompany.com'
     GITOPS_OWNER = 'company'
-    GITOPS_PATH = 'clusters/staging'
     GITOPS_REPO = 'k8s'
     GITOPS_TOKEN = ''
     HCLOUD_TOKEN = ''

@@ -4,7 +4,7 @@ from ..ssh import ensure_forward
 from ..tools import require_cmd, confirm, die, log, read_file, run, const, shw, write_file
 from ..tools import need_env as E
 from ..tools import cmd
-from ..flux import tools
+#from ..flux import tools
 
 d_our_repo = E('FLUX_REPO', '.')
 req_cmds = cmd('kubectl', 'sops', 'helm', use='--help') + cmd('age', 'git', 'flux')
@@ -43,13 +43,18 @@ class tekton:
     def remove_from_cluster():
         d_our_repo = tools.get_clean_repo()
         fn_entry = d_our_repo + '/clusters/production/infrastructure.yaml'
-        docs = read_file(fn_entry, '').split('\n---\n')
-        docs = '\n---\n'.join([doc for doc in docs if 'infra-tekton' not in doc])
-        with open(fn_entry, 'w') as f:
-            f.write(docs + '\n')
+        cmt = False
+        if os.path.exists(fn_entry):
+            docs = read_file(fn_entry, '').split('\n---\n')
+            docs = '\n---\n'.join([doc for doc in docs if 'infra-tekton' not in doc])
+            cmt = True
+            with open(fn_entry, 'w') as f:
+                f.write(docs + '\n')
         d = d_our_repo + '/infrastructure/tekton'
         if os.path.exists(d):
             shutil.rmtree(d)
+            cmt = True
+        cmt and tools.git(d_our_repo, add='.', msg='Tekton removed', push=True)
         for l in [
             """for crd in $(kubectl get crd | grep -i tekton | awk '{print $1}'); do kubectl patch crd $crd -p '{"metadata":{"finalizers":[]}}' --type=merge; done""",
             """kubectl get crd | grep -i tekton | awk '{print $1}' | xargs -I {} kubectl delete crd {}""",
@@ -59,7 +64,6 @@ class tekton:
             'kubectl get crd| grep -i tekton',
         ]:
             log.info(l) or os.system(l)
-        tools.git(d_our_repo, add='.', msg='Tekton removed', push=True)
         log.info('Removed all tekton from your cluster and flux repo')
 
 

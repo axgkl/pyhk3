@@ -1,7 +1,7 @@
-from .ssh import ensure_forward
-from .tools import require_cmd, confirm, die, log, read_file, run, const, shw, write_file
-from .tools import exists, need_env as E
-from .tools import cmd
+from ..ssh import ensure_forward
+from ..tools import require_cmd, confirm, die, log, read_file, run, const, shw, write_file
+from ..tools import exists, need_env as E
+from ..tools import do_git, cmd
 import os, sh, shutil, json
 
 
@@ -9,13 +9,7 @@ d_flux = os.path.abspath(E('FLUX_REPO', '.'))
 
 
 class git:
-    def do(f, *a, d=None, **kw):
-        kw['_cwd'] = d
-        if d:
-            kw['_cwd'] = d.replace(os.getcwd(), '.')
-        log.info(f'git {f} {" ".join(list(a))}', **kw)
-        kw['_cwd'] = d
-        return getattr(sh.git, f)(*a, **kw)
+    do = do_git
 
     def create_branch(env, d):
         git.do('branch', env, d=d)
@@ -42,16 +36,26 @@ class git:
         d = d_flux + '/' + env
         if not exists(d):
             git.do('worktree', 'add', f'../{env}', env, d=db)
+            git.do('pull', 'origin', env, d=d)
+            git.do('branch', f'--set-upstream-to=origin/{env}', env, d=d)
         git.do('pull', d=d)
         return d
 
-    def push():
-        git.do('push', d=d_flux + '/' + E('GITOPS_ENV'))
+    def push(msg=None):
+        d = d_flux + '/' + E('GITOPS_ENV')
+        if msg:
+            git.do('commit', '-am', msg, d=d, _ok_code=[0, 1])
+        git.do('push', d=d)
 
     def get_adder(d):
-        def adder(fn, s=None, d=d):
+        def adder(fn, s=None, d=d, **kw):
             if s:
-                write_file(f'{d}/{fn}', s)
+                have = read_file(fn, dflt='')
+                if not have:
+                    write_file(f'{d}/{fn}', s, **kw)
+                else:
+                    if have != s:
+                        log.warn('exists and different', fn=fn)
             git.do('add', fn, d=d)
 
         return adder

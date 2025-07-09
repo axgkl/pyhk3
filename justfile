@@ -13,7 +13,7 @@ alias pf := port-forward
 alias fk := flux-kubeconform
 alias elk := download-kubectl
 
-export FLUX_REPO := 'tmp/our-repo.git'
+export FLUX_REPO := './tmp/gitops'
 
 default:
   @just --list
@@ -56,12 +56,17 @@ download-kubectl:
 port-forward:
   just p do port_forward
 
+reconcile:
+  just p flux reconcile
 
 flux-install:
   just p flux ensure_requirements
   just p flux install
+  just p flux add_validator
   just p flux add_sops_secret
-  just p flux add_tmpl 'gh:/fluxcd/flux2-kustomize-helm-example'
+  just p flux add_infra_and_apps_skeleton
+  just p flux add_infra_ingress_nginx
+  just p flux add_infra_certmgr
 
 flux-uninstall:
   just p flux uninstall
