@@ -1,10 +1,11 @@
 import os, yaml
 import shutil
+from ..kubectl import port_fwd
 from ..ssh import ensure_forward
 from ..tools import require_cmd, confirm, die, log, read_file, run, const, shw, write_file
 from ..tools import need_env as E
-from ..tools import cmd
-#from ..flux import tools
+from ..tools import cmd, 𝛌
+# from ..flux import tools
 
 d_our_repo = E('FLUX_REPO', '.')
 req_cmds = cmd('kubectl', 'sops', 'helm', use='--help') + cmd('age', 'git', 'flux')
@@ -14,6 +15,8 @@ d_ymls = os.path.abspath(os.path.dirname(__file__)) + '/yamls'
 
 class tekton:
     ensure_requirements = lambda: require_cmd(*req_cmds)
+    port_forward = λ(port_fwd, 'tekton-pipelines', 'svc/tekton-dashboard', 9097)
+    reconcile = lambda: run('flux reconcile kustomization infra-tekton -n flux-system')
 
     def install():
         """Install Tekton using Flux.
@@ -32,13 +35,6 @@ class tekton:
         write_file(fn_entry, infra + T)
         tools.git(d_our_repo, add='.', msg='Tekton reference', push=True)
         log.info('Tekton installation configured. Waiting for Flux to apply changes...')
-
-    def port_forward():
-        run('kubectl port-forward -n tekton-pipelines svc/tekton-dashboard 9097:9097')
-
-    def reconcile():
-        tools.reconcile()
-        run('flux reconcile kustomization infra-tekton -n flux-system')
 
     def remove_from_cluster():
         d_our_repo = tools.get_clean_repo()

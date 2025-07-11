@@ -1,8 +1,13 @@
 from .assets.kubectl import T_NS
-from .tools import log, add_to_pass, need_env as E, die, env_key_on_missing
+from .tools import run, log, add_to_pass, need_env as E, die, env_key_on_missing
 from base64 import b64decode as b64
 import json
 import sh
+
+
+def port_fwd(ns, svc, port):
+    log.info(f'http://127.0.0.1:{port}')
+    run(f'kubectl port-forward -n {ns} {svc} {port}:{port}')
 
 
 def ensure_namespace(namespace: str):
@@ -20,7 +25,6 @@ def ensure_secret(name, key, ns, envkey=None):
     - age-keygen  if not
 
     When envkey is not set and startswith 'pass:' we create pass entry as well
-
     """
     ensure_namespace(ns)
     ns = ('--namespace', ns)

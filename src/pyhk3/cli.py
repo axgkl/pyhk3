@@ -35,9 +35,12 @@ def tc(cls):
 
 
 def tv(fnc, name='xxx'):
-    n = fnc.__name__
+    f = fnc
+    while hasattr(f, 'func'):
+        f = f.func
+    n = getattr(f, '__name__', '')
     n = '' if n == name else n
-    return f'{n} {D(fnc)}'
+    return f'{n} {D(f)}'.replace('<lambda>', '𝛌')
 
 
 def cls_help(cls, inittree=None):

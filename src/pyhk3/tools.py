@@ -4,22 +4,19 @@ import sys
 import sh
 import json
 import subprocess
-import importlib.util
-
 from rich.console import Console
 from rich.prompt import Confirm
 from .cache import nil
 from .defaults import envdefaults
 import time
-
 import yaml
+import importlib.util
+from functools import partial as 𝛌  # > 2 * faster as lambda
 
+now = 𝛌(int, time.time() * 1000)
 console = Console()
-now = lambda: int(time.time() * 1000)
-T0 = now()
-
-
 exists = os.path.exists
+T0 = now()
 
 
 class const:

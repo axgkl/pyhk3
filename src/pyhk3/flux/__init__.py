@@ -98,14 +98,6 @@ def add_sops_secret():
 _here = lambda: dir_(__file__)
 
 
-def add_infra_and_apps_skeleton():
-    return add_app('skeleton', 'SRC/skel')
-
-
-def add_infra_ingress_nginx():
-    return add_app('ingress-nginx', 'SRC/ingress-nginx')
-
-
 def _encrypt(d, y):
     pubkey = read_file(f'{d}/{fn_pubkey()}').strip()
     fn = f'{d}/tmp.yaml'
@@ -122,10 +114,6 @@ def _encrypt(d, y):
     s = read_file(fn)
     os.unlink(fn)
     return s
-
-
-def add_infra_certmgr():
-    return add_app('certmgr', 'SRC/cert-manager')
 
 
 nil = '\x01'
@@ -166,7 +154,7 @@ def add_app(name, dir, l=None):
             y = _repl(read_file(fpth))
             if fn == 'kustomization.yaml':
                 y = _merge_kust(y, dflx + '/' + pth)
-            if any([i for i in y.splitlines() if _is_secr_kind(i)]):
+            if y.startswith('# encrypt-sops'):
                 y = _encrypt(dflx, y)
             add(pth, y)
     git.push(f'Added {name}')
@@ -223,10 +211,16 @@ class flux:
     install = install
     add_validator = add_validator
     add_sops_secret = add_sops_secret
-    add_infra_and_apps_skeleton = add_infra_and_apps_skeleton
-    add_infra_ingress_nginx = add_infra_ingress_nginx
-    add_infra_certmgr = add_infra_certmgr
     add_app = add_app
     uninstall = uninstall
     info = info
     reconcile = reconcile
+
+    def add_infra_and_apps_skeleton():
+        return add_app('skeleton', 'SRC/skel')
+
+    def add_infra_ingress_nginx():
+        return add_app('ingress-nginx', 'SRC/ingress-nginx')
+
+    def add_infra_certmgr():
+        return add_app('certmgr', 'SRC/cert-manager')

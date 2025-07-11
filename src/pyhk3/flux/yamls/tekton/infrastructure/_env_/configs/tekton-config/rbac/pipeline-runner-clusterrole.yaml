@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tekton-pipeline-runner
+rules:
+  # Basic Kubernetes resources
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps", "secrets"]
+    verbs: ["get", "list", "create", "update", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "create", "update", "delete"]
+  # Tekton Pipeline resources
+  - apiGroups: ["tekton.dev"]
+    resources: ["tasks", "pipelines", "pipelineruns", "taskruns"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  # Tekton Triggers resources
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["triggers", "triggerbindings", "triggertemplates", "eventlisteners", "interceptors"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  # Tekton ClusterTasks and ClusterInterceptors (cluster-scoped)
+  - apiGroups: ["tekton.dev"]
+    resources: ["clustertasks"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["clusterinterceptors", "clustertriggerbindings"]
+    verbs: ["get", "list", "watch"]
